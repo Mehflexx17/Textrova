@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 // Serve static assets
 app.use('/videos', express.static(path.join(__dirname, '..', 'public', 'videos')));
 app.use('/assets', express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'))); // serve public index for single-site deployment
 
 const memoryStorage = multer.memoryStorage();
 const upload = multer({ storage: memoryStorage, limits: { fileSize: 50 * 1024 * 1024 } });
