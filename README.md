@@ -1,63 +1,80 @@
-# textrova
+# Textrova
 
-Open-source web app for in-memory text & PDF extraction + video selection gallery.
+A complete open-source web app for study overlay (scrolling text over video). Supports:
+- Paste text manually
+- Upload PDF (in-memory parsing only)
+- Choose preloaded Google Drive videos
+- Fullscreen video background with scrolling overlay text
+- Dark theme, mobile friendly, TR/EN toggle
+- Data cleared on refresh (state only)
 
-## 📁 Structure
+## 📁 Project structure
 
 - `/frontend` - React app (Vite + React)
 - `/backend` - Node.js + Express API
-- `/public/videos` - static video content (not uploaded by users)
+- `/public/videos` - video metadata (Google Drive links)
 - `/scripts` - optional scripts
-- `README.md`, `package.json`, `LICENSE`
+- `.gitignore`, `README.md`, `package.json`, `LICENSE`
 
-## 🛠️ Requirements supported
+## 📦 Setup
 
-- Paste text
-- Upload PDF and parse in-memory only (no disk writes)
-- Auto-read videos from `/public/videos` and display gallery
-- Allow one or multiple video selections
-- Refresh clears app state
-- Dark UI
-- TR/EN toggle
-- Smooth animations
+1. Clone:
+   - `git clone https://github.com/Mehflexx17/Textrova.git`
+   - `cd Textrova`
+2. Install dependencies:
+   - `npm install`
+3. Start backend:
+   - `npm run start:backend`
+4. Start frontend:
+   - `npm run start:frontend`
+5. Open `http://localhost:3000`
 
-## ▶️ Run locally
+Use `npm run start` to run both at once with `concurrently`.
 
-1. `npm install`
-2. `npm run start:backend` (http://localhost:4000)
-3. `npm run start:frontend` (http://localhost:3000)
+## 🎬 Google Drive videos
 
-Or run both:
-- `npm run start` (uses concurrently)
+Video URLs are under `/public/videos/videos.json`. Example entries:
+```json
+[
+  { "name": "Study Session 1", "url": "https://docs.google.com/uc?export=download&id=1A2B3C4D5E6F7G8H9I0J" },
+  { "name": "Study Session 2", "url": "https://docs.google.com/uc?export=download&id=0J9I8H7G6F5E4D3C2B1A" }
+]
+```
 
-## 💡 Add videos manually
+- `GET /api/videos` reads this JSON and returns links.
+- No user-side video uploads.
 
-- Place video files in `/public/videos` (e.g., `myvideo.mp4`, `demo.webm`)
-- The backend API `GET /api/videos` scans this folder each request
-- Frontend loads the list and shows them in the gallery
-- Videos are not uploaded by users; they are local assets
+## 🧠 Backend details
 
-## 🧾 Backend
+`backend/index.js`:
+- `GET /api/videos` reads `public/videos/videos.json` (fallback to static file scan)
+- `POST /api/upload-pdf` accepts PDF via `multer` memory storage and parses with `pdf-parse`
 
-- `backend/index.js`
-- `GET /api/videos` to list files in `/public/videos`
-- `POST /api/upload-pdf` to parse PDF buffer (multer memory storage + pdf-parse)
+## 💻 Frontend details
 
-## 🧾 Frontend
+`frontend/src/App.jsx` now:
+- loads videos from API
+- selectable checkboxes (one or more)
+- fullscreen video background using first selected (or first in list)
+- scrolling text overlay with adjustable speed slider
+- TR/EN labels + locale switch
+- in-memory text and parsed pdf state
 
-- `frontend/src/App.jsx` handles paste text, PDF upload, locale switch, video gallery, and preview rendering
+## 🧾 .gitignore
 
-## 🔒 Data notice
+Ignore `node_modules`, `dist`, `.env`, editor caches etc.
 
-- User uploads and extracted text are memory-only
-- No permanent file storage
-- Reload clears all data
+## 📜 LICENSE
 
-## ✅ Test flow
+MIT license in `LICENSE`.
 
-1. Add sample video(s) to `/public/videos`
-2. `npm run start:backend` + `npm run start:frontend`
-3. Open http://localhost:3000
-4. Upload PDF, paste text, select videos
+## 🧪 Quick test flow
+
+1. Run backend+frontend
+2. Confirm video list appears
+3. Paste text or upload PDF
+4. Toggle video selection
+5. Adjust scroll speed
+6. Refresh page -> all state resets
 
 

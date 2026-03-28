@@ -20,16 +20,24 @@ app.use(express.static(path.join(__dirname, '..', 'public'))); // serve public i
 const memoryStorage = multer.memoryStorage();
 const upload = multer({ storage: memoryStorage, limits: { fileSize: 50 * 1024 * 1024 } });
 
-// Video list API (automatic gallery source)
+// Video list API (automatic gallery source from JSON metadata)
 app.get('/api/videos', async (req, res) => {
-  const videosPath = path.join(__dirname, '..', 'public', 'videos');
+  const metadataFile = path.join(__dirname, '..', 'public', 'videos', 'videos.json');
   try {
-    const filenames = await fs.promises.readdir(videosPath);
-    const filtered = filenames.filter(f => /\.(mp4|webm|ogg|mov)$/i.test(f));
-    const videos = filtered.map(name => ({ name, url: `/videos/${encodeURIComponent(name)}` }));
+    const json = await fs.promises.readFile(metadataFile, 'utf-8');
+    const videos = JSON.parse(json);
     res.json({ videos });
   } catch (err) {
-    res.status(500).json({ error: 'Unable to read videos folder', details: err.message });
+    // fallback to directory scan if JSON not found
+    try {
+      const videosPath = path.join(__dirname, '..', 'public', 'videos');
+      const filenames = await fs.promises.readdir(videosPath);
+      const filtered = filenames.filter(f => /\.(mp4|webm|ogg|mov)$/i.test(f));
+      const videos = filtered.map(name => ({ name, url: `/videos/${encodeURIComponent(name)}` }));
+      res.json({ videos });
+    } catch (innerErr) {
+      res.status(500).json({ error: 'Unable to load videos', details: err.message });
+    }
   }
 });
 
